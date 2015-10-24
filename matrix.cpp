@@ -11,6 +11,8 @@
 
 #include "matrix.hpp"
 
+// TODO: Implement the ability to load matrix from a file.
+
 template <typename T>
 Matrix<T>::Matrix(unsigned int _rows, unsigned int _cols, const T & _initial) {
     mat.resize(_rows);

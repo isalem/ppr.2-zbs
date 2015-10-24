@@ -30,6 +30,8 @@ void vector_println(std::vector<int> & vector) {
 
 int main(int argc, const char * argv[]) {
     
+    // TODO: Make a pareser of commandline arguments.
+    
     unsigned int a = 3;
     unsigned int n = 6;
     
@@ -44,6 +46,8 @@ int main(int argc, const char * argv[]) {
     
     while (next_combination(combination, n, a)) {
         vector_println(combination);
+        
+        // TODO: Make a function to find number of edges.
     }
     
     return 0;
