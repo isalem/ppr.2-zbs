@@ -3,7 +3,7 @@ project(zbs)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -O3")
 
-include_directories(./src/lib/tclap-1.2.1/include)
+include_directories(./src/lib/tclap/include)
 
 set(SOURCE_FILES ./src/main.cpp)
 add_executable(zbs ${SOURCE_FILES})
