@@ -1,56 +1,93 @@
 //
-//  matrix.cpp
+//  SquareMatrix.cpp
 //  zsb
 //
 //  Created by Banschikov Valentin on 24.10.15.
 //  Copyright © 2015 Valentin Banshchikov. All rights reserved.
 //
 
-#ifndef matrix_cpp
-#define matrix_cpp
+#ifndef SquareMatrix_cpp
+#define SquareMatrix_cpp
+
+#include <ostream>
+#include <fstream>
 
 #include "matrix.hpp"
 
-// TODO: Implement the ability to load matrix from a file.
+using namespace std;
 
 template <typename T>
-Matrix<T>::Matrix(unsigned int _rows, unsigned int _cols, const T & _initial) {
-    mat.resize(_rows);
+SquareMatrix<T>::SquareMatrix(unsigned int _order, const T & _initial) {
+    mat.resize(_order);
     for (unsigned int i = 0; i < mat.size(); i++) {
-        mat[i].resize(_cols, _initial);
+        mat[i].resize(_order, _initial);
     }
-    rows = _rows;
-    cols = _cols;
+    order = _order;
 }
 
 template <typename T>
-Matrix<T>::Matrix(const Matrix<T> & rhs) {
+SquareMatrix<T>::SquareMatrix(unsigned int _order, string matFilePath) {
+    ifstream matFile(matFilePath);
+
+    if (!matFile) {
+        throw runtime_error("Can't open file " + matFilePath);
+    }
+
+    mat.resize(_order);
+
+    bool matrixOrderLine = true;
+    unsigned int row = 0;
+
+    for (string line; getline(matFile, line);) {
+        if (matrixOrderLine) {
+            int orderFromFile = stoi(line);
+
+            if (orderFromFile != _order) {
+                throw runtime_error("Matrix order error");
+            }
+
+            matrixOrderLine = false;
+        } else {
+            mat[row].resize(_order);
+            unsigned int col = 0;
+
+            for (string::iterator it = line.begin(), itEnd = line.end(); it < itEnd; it++) {
+                unsigned int number = *it - '0';
+                mat[row][col] = number;
+                col++;
+            }
+
+            row++;
+        }
+    }
+
+    matFile.close();
+
+    order = _order;
+}
+
+template <typename T>
+SquareMatrix<T>::SquareMatrix(const SquareMatrix<T> & rhs) {
     mat = rhs.mat;
-    cols = rhs.get_cols();
-    rows = rhs.get_rows();
+    order = rhs.get_order();
 }
 
 template <typename T>
-Matrix<T>::~Matrix<T>() { }
+SquareMatrix<T>::~SquareMatrix<T>() { }
 
 template<typename T>
-T& Matrix<T>::operator()(const unsigned int & row, const unsigned int & col) {
+T& SquareMatrix<T>::operator()(const unsigned int & row, const unsigned int & col) {
     return this->mat[row][col];
 }
 
 template<typename T>
-const T& Matrix<T>::operator()(const unsigned int & row, const unsigned int & col) const {
+const T& SquareMatrix<T>::operator()(const unsigned int & row, const unsigned int & col) const {
     return this->mat[row][col];
 }
 
 template <typename T>
-unsigned int Matrix<T>::get_rows() const {
-    return this->rows;
-}
-
-template <typename T>
-unsigned int Matrix<T>::get_cols() const {
-    return this->cols;
+unsigned int SquareMatrix<T>::get_order() const {
+    return this->order;
 }
 
 #endif

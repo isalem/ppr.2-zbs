@@ -41,13 +41,16 @@ int main(int argc, const char * argv[]) {
         TCLAP::ValueArg<unsigned int> nArg("n", "n", "Počet uzlů grafu G", true, 0, "number", cmd);
         TCLAP::ValueArg<unsigned int> mArg("m", "m", "Počet hran grafu G", false, 0, "number", cmd);
         TCLAP::ValueArg<unsigned int> kArg("k", "k", "Průměrný stupeň uzlu grafu G", false, 0, "number", cmd);
-        TCLAP::ValueArg<string> graphArg("g", "graph", "Jednoduchý souvislý neorientovaný neohodnocený graf", false, "graph.txt", "filename", cmd);
+        TCLAP::ValueArg<string> graphArg("g", "graph", "Jednoduchý souvislý neorientovaný neohodnocený graf",
+                                         false, "graph.txt", "filename", cmd);
         
         cmd.parse( argc, argv );
         
         unsigned int a = aArg.getValue();
         unsigned int n = nArg.getValue();
         string graphPath = graphArg.getValue();
+
+        SquareMatrix<unsigned int> graph(n, graphPath);
         
         vector<int> combination;
         
