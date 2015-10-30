@@ -15,7 +15,8 @@
 
 using namespace std;
 
-bool next_combination(std::vector<int> & combination, int n, int a) {
+template <typename T>
+bool next_combination(std::vector<T> & combination, int n, int a) {
     for (int i = a - 1; i >= 0; --i)
         if (combination[i] < n - a + i + 1) {
             ++combination[i];
@@ -26,9 +27,27 @@ bool next_combination(std::vector<int> & combination, int n, int a) {
     return false;
 }
 
-void vector_println(std::vector<int> & vector) {
+void vector_println(std::vector<unsigned int> & vector) {
     copy(vector.begin(), vector.end(), std::ostream_iterator<int>(cout," "));
     cout << endl;
+}
+
+unsigned int sequenceZBS(vector<unsigned int> combination, vector<unsigned int> combinationDifference,
+                                 const vector<unsigned int> & allSet,
+                                 const SquareMatrix<unsigned int> & graph) {
+
+    unsigned int countEdges = 0;
+
+    for (vector<unsigned int>::iterator row = combination.begin(), rowEnd = combination.end(); row < rowEnd; row++) {
+        for (vector<unsigned int>::iterator col = combinationDifference.begin(), colEnd = combinationDifference.end();
+             col < colEnd; col++) {
+            if (graph(*row -1, *col - 1) == 1 ) {
+                countEdges++;
+            }
+        }
+    }
+
+    return countEdges;
 }
 
 int main(int argc, const char * argv[]) {
@@ -52,21 +71,58 @@ int main(int argc, const char * argv[]) {
 
         SquareMatrix<unsigned int> graph(n, graphPath);
         
-        vector<int> combination;
-        
+        vector<unsigned int> combination;
+        vector<unsigned int> allSet;
+
+        for (unsigned int i = 1; i <= n; i++) {
+            allSet.insert(allSet.end(), i);
+        }
+
         // first combination (1, 2, 3, ...)
         for (unsigned int i = 1; i <= a; i++) {
             combination.insert(combination.end(), i);
         }
-        
-        vector_println(combination);
-        
-        while (next_combination(combination, n, a)) {
-            vector_println(combination);
-            
-            // TODO: Make a function to find number of edges.
-        }
-        
+
+        unsigned int bestCountEdges = UINT_MAX;
+        vector<unsigned int> bestCombination;
+        vector<unsigned int> bestСombinationСomplement;
+
+        unsigned int combinationNumber = 1;
+
+        do {
+            vector<unsigned int> combinationСomplement(allSet.size());
+            vector<unsigned int>::iterator it;
+
+            it = set_difference(allSet.begin(), allSet.end(),
+                                combination.begin(), combination.end(),
+                                combinationСomplement.begin());
+
+            combinationСomplement.resize(it - combinationСomplement.begin());
+
+            unsigned int countEdges = sequenceZBS(combination, combinationСomplement, allSet, graph);
+
+            if (countEdges < bestCountEdges) {
+                bestCountEdges = countEdges;
+                bestCombination = combination;
+                bestСombinationСomplement = combinationСomplement;
+
+                cout << "Set A: ";
+                vector_println(bestCombination);
+                cout << "Set N-A: ";
+                vector_println(bestСombinationСomplement);
+
+                cout << "Count edges: " << bestCountEdges << endl;
+            }
+
+        } while (next_combination<unsigned int>(combination, n, a));
+
+        cout << "Set A: ";
+        vector_println(bestCombination);
+        cout << "Set N-A: ";
+        vector_println(bestСombinationСomplement);
+
+        cout << "Count edges: " << bestCountEdges << endl;
+
         return 0;
         
 
