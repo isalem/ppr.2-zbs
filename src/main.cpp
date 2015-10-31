@@ -1,6 +1,5 @@
 #include <iostream>
 #include <vector>
-#include <iterator>
 
 #include "matrix.hpp"
 #include <tclap/CmdLine.h>
