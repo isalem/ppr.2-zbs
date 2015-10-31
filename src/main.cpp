@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <limits>
+#include <iterator>
 
 #include "matrix.hpp"
 #include <tclap/CmdLine.h>

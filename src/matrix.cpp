@@ -11,6 +11,7 @@
 
 #include <ostream>
 #include <fstream>
+#include <stdexcept>
 
 #include "matrix.hpp"
 
