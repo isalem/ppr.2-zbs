@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <limits>
 
 #include "matrix.hpp"
 #include <tclap/CmdLine.h>
@@ -74,7 +75,7 @@ int main(int argc, const char * argv[]) {
             combination.insert(combination.end(), i);
         }
 
-        unsigned int bestCountEdges = UINT_MAX;
+        unsigned int bestCountEdges = numeric_limits<unsigned int>::max();
         vector<unsigned int> bestCombination;
         vector<unsigned int> bestCombinationComplement;
 
