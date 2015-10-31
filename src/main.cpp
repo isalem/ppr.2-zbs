@@ -32,7 +32,7 @@ void vector_println(std::vector<unsigned int> & vector) {
     cout << endl;
 }
 
-unsigned int sequenceZBS(vector<unsigned int> combination, vector<unsigned int> combinationDifference,
+unsigned int sequenceZBS(vector<unsigned int> & combination, vector<unsigned int> & combinationDifference,
                                  const vector<unsigned int> & allSet,
                                  const SquareMatrix<unsigned int> & graph) {
 
@@ -87,10 +87,8 @@ int main(int argc, const char * argv[]) {
         vector<unsigned int> bestCombination;
         vector<unsigned int> bestСombinationСomplement;
 
-        unsigned int combinationNumber = 1;
-
         do {
-            vector<unsigned int> combinationСomplement(allSet.size());
+            vector<unsigned int> combinationСomplement(n);
             vector<unsigned int>::iterator it;
 
             it = set_difference(allSet.begin(), allSet.end(),
@@ -105,13 +103,6 @@ int main(int argc, const char * argv[]) {
                 bestCountEdges = countEdges;
                 bestCombination = combination;
                 bestСombinationСomplement = combinationСomplement;
-
-                cout << "Set A: ";
-                vector_println(bestCombination);
-                cout << "Set N-A: ";
-                vector_println(bestСombinationСomplement);
-
-                cout << "Count edges: " << bestCountEdges << endl;
             }
 
         } while (next_combination<unsigned int>(combination, n, a));
