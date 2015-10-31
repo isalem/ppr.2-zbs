@@ -25,7 +25,7 @@ void vector_println(std::vector<unsigned int> & vector) {
     cout << endl;
 }
 
-unsigned int sequenceZBS(vector<unsigned int> & combination, vector<unsigned int> & combinationDifference,
+unsigned int sequentialZBS(vector<unsigned int> & combination, vector<unsigned int> & combinationDifference,
                                  const vector<unsigned int> & allSet,
                                  const SquareMatrix<unsigned int> & graph) {
 
@@ -90,7 +90,7 @@ int main(int argc, const char * argv[]) {
 
             combinationComplement.resize(it - combinationComplement.begin());
 
-            unsigned int countEdges = sequenceZBS(combination, combinationComplement, allSet, graph);
+            unsigned int countEdges = sequentialZBS(combination, combinationComplement, allSet, graph);
 
             if (countEdges < bestCountEdges) {
                 bestCountEdges = countEdges;
