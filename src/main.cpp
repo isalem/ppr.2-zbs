@@ -1,11 +1,3 @@
-//
-//  main.cpp
-//  zsb
-//
-//  Created by Banschikov Valentin on 24.10.15.
-//  Copyright © 2015 Valentin Banshchikov. All rights reserved.
-//
-
 #include <iostream>
 #include <vector>
 #include <iterator>
@@ -85,24 +77,24 @@ int main(int argc, const char * argv[]) {
 
         unsigned int bestCountEdges = UINT_MAX;
         vector<unsigned int> bestCombination;
-        vector<unsigned int> bestСombinationСomplement;
+        vector<unsigned int> bestCombinationComplement;
 
         do {
-            vector<unsigned int> combinationСomplement(n);
+            vector<unsigned int> combinationComplement(n);
             vector<unsigned int>::iterator it;
 
             it = set_difference(allSet.begin(), allSet.end(),
                                 combination.begin(), combination.end(),
-                                combinationСomplement.begin());
+                                combinationComplement.begin());
 
-            combinationСomplement.resize(it - combinationСomplement.begin());
+            combinationComplement.resize(it - combinationComplement.begin());
 
-            unsigned int countEdges = sequenceZBS(combination, combinationСomplement, allSet, graph);
+            unsigned int countEdges = sequenceZBS(combination, combinationComplement, allSet, graph);
 
             if (countEdges < bestCountEdges) {
                 bestCountEdges = countEdges;
                 bestCombination = combination;
-                bestСombinationСomplement = combinationСomplement;
+                bestCombinationComplement = combinationComplement;
             }
 
         } while (next_combination<unsigned int>(combination, n, a));
@@ -110,7 +102,7 @@ int main(int argc, const char * argv[]) {
         cout << "Set A: ";
         vector_println(bestCombination);
         cout << "Set N-A: ";
-        vector_println(bestСombinationСomplement);
+        vector_println(bestCombinationComplement);
 
         cout << "Count edges: " << bestCountEdges << endl;
 
