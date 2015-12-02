@@ -1,5 +1,5 @@
-# Clone
-    $ git clone --recursive git://github.com/isalem/ppr.2-zbs.git
+# Requirements
+* [Tclap](http://tclap.sourceforge.net)
 
 # Build
     $ mkdir build

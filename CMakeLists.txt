@@ -1,9 +1,15 @@
 cmake_minimum_required(VERSION 3.3)
 project(zbs)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -O3")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
-include_directories(./src/lib/tclap/include)
+set(EXECUTABLE_OUTPUT_PATH "${PROJECT_SOURCE_DIR}/build/")
+set(LIBRARY_OUTPUT_PATH "${PROJECT_SOURCE_DIR}/build/")
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+
+find_package(TCLAP REQUIRED)
+include_directories(${TCLAP_INCLUDE_DIR})
 
 set(SOURCE_FILES ./src/main.cpp)
 add_executable(zbs ${SOURCE_FILES})
