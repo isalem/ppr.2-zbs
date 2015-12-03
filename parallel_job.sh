@@ -63,7 +63,7 @@ INFINIBAND="false"
 # | Parallel program with arguments.                                          |
 # |                                                                           |
 #  ===========================================================================
-MY_PARALLEL_PROGRAM="./build/zbs -p -a 13 ../data/graph.txt"
+MY_PARALLEL_PROGRAM="./build/zbs -p -a 13 ./data/graph.txt"
 
 
 
