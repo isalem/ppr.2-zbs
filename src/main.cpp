@@ -1,12 +1,12 @@
 #include <iostream>
 #include <vector>
+#include <chrono>
 #include <limits>
 #include <iterator>
 
 #include "matrix.hpp"
 #include <tclap/CmdLine.h>
 
-typedef std::chrono::high_resolution_clock Clock;
 
 using namespace std;
 
@@ -82,7 +82,7 @@ int main(int argc, const char * argv[]) {
         vector<unsigned int> bestCombination;
         vector<unsigned int> bestCombinationComplement;
 
-        auto start_clock = Clock::now();
+        auto start_clock = chrono::high_resolution_clock::now();
 
         do {
             vector<unsigned int> combinationComplement(graph.get_order());
@@ -104,7 +104,7 @@ int main(int argc, const char * argv[]) {
 
         } while (next_combination<unsigned int>(combination, graph.get_order(), a));
 
-        auto end_clock = Clock::now();
+        auto end_clock = chrono::high_resolution_clock::now();
 
         double seconds = chrono::duration_cast<chrono::milliseconds>((end_clock - start_clock)).count() / 1000.0;
 
