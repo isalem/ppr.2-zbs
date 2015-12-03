@@ -6,6 +6,8 @@
 #include "matrix.hpp"
 #include <tclap/CmdLine.h>
 
+typedef std::chrono::high_resolution_clock Clock;
+
 using namespace std;
 
 template <typename T>
@@ -80,6 +82,8 @@ int main(int argc, const char * argv[]) {
         vector<unsigned int> bestCombination;
         vector<unsigned int> bestCombinationComplement;
 
+        auto start_clock = Clock::now();
+
         do {
             vector<unsigned int> combinationComplement(graph.get_order());
             vector<unsigned int>::iterator it;
@@ -100,6 +104,11 @@ int main(int argc, const char * argv[]) {
 
         } while (next_combination<unsigned int>(combination, graph.get_order(), a));
 
+        auto end_clock = Clock::now();
+
+        double seconds = chrono::duration_cast<chrono::milliseconds>((end_clock - start_clock)).count() / 1000.0;
+
+        cout << "Time: " << seconds << " seconds" << endl;
         cout << "Set A: ";
         vector_println(bestCombination);
         cout << "Set N-A: ";
