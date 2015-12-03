@@ -13,5 +13,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 find_package(Tclap REQUIRED)
 include_directories(${TCLAP_INCLUDE_DIR})
 
-set(SOURCE_FILES ./src/main.cpp)
+set(SOURCE_FILES
+        ${PROJECT_SOURCE_DIR}/src/main.cpp
+        ${PROJECT_SOURCE_DIR}/src/matrix.cpp)
 add_executable(zbs ${SOURCE_FILES})
