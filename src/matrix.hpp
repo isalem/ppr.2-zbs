@@ -19,8 +19,7 @@ private:
     unsigned int order;
     
 public:
-    SquareMatrix(unsigned int _order, const T & initial);
-    SquareMatrix(unsigned int _order, std::string matFilePath);
+    SquareMatrix(std::string matFilePath);
     SquareMatrix(const SquareMatrix<T> & rhs);
     virtual ~SquareMatrix();
     

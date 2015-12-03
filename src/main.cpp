@@ -50,24 +50,24 @@ int main(int argc, const char * argv[]) {
 
         
         TCLAP::ValueArg<unsigned int> aArg("a", "a", "Přirozené číslo", true, 0, "number", cmd);
-        TCLAP::ValueArg<unsigned int> nArg("n", "n", "Počet uzlů grafu G", true, 0, "number", cmd);
-        TCLAP::ValueArg<unsigned int> mArg("m", "m", "Počet hran grafu G", false, 0, "number", cmd);
-        TCLAP::ValueArg<unsigned int> kArg("k", "k", "Průměrný stupeň uzlu grafu G", false, 0, "number", cmd);
         TCLAP::ValueArg<string> graphArg("g", "graph", "Jednoduchý souvislý neorientovaný neohodnocený graf",
                                          false, "graph.txt", "filename", cmd);
         
         cmd.parse( argc, argv );
-        
-        unsigned int a = aArg.getValue();
-        unsigned int n = nArg.getValue();
-        string graphPath = graphArg.getValue();
 
-        SquareMatrix<unsigned int> graph(n, graphPath);
-        
+        string graphPath = graphArg.getValue();
+        SquareMatrix<unsigned int> graph(graphPath);
+
+        unsigned int a = aArg.getValue();
+
+        if (a >= graph.get_order()) {
+            throw runtime_error("A is bigger then graph's order");
+        }
+
         vector<unsigned int> combination;
         vector<unsigned int> allSet;
 
-        for (unsigned int i = 1; i <= n; i++) {
+        for (unsigned int i = 1; i <= graph.get_order(); i++) {
             allSet.insert(allSet.end(), i);
         }
 
@@ -81,7 +81,7 @@ int main(int argc, const char * argv[]) {
         vector<unsigned int> bestCombinationComplement;
 
         do {
-            vector<unsigned int> combinationComplement(n);
+            vector<unsigned int> combinationComplement(graph.get_order());
             vector<unsigned int>::iterator it;
 
             it = set_difference(allSet.begin(), allSet.end(),
@@ -98,7 +98,7 @@ int main(int argc, const char * argv[]) {
                 bestCombinationComplement = combinationComplement;
             }
 
-        } while (next_combination<unsigned int>(combination, n, a));
+        } while (next_combination<unsigned int>(combination, graph.get_order(), a));
 
         cout << "Set A: ";
         vector_println(bestCombination);

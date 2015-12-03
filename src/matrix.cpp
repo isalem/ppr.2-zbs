@@ -18,38 +18,25 @@
 using namespace std;
 
 template <typename T>
-SquareMatrix<T>::SquareMatrix(unsigned int _order, const T & _initial) {
-    mat.resize(_order);
-    for (unsigned int i = 0; i < mat.size(); i++) {
-        mat[i].resize(_order, _initial);
-    }
-    order = _order;
-}
-
-template <typename T>
-SquareMatrix<T>::SquareMatrix(unsigned int _order, string matFilePath) {
+SquareMatrix<T>::SquareMatrix(string matFilePath) {
     ifstream matFile(matFilePath);
 
     if (!matFile) {
         throw runtime_error("Can't open file " + matFilePath);
     }
 
-    mat.resize(_order);
-
     bool matrixOrderLine = true;
     unsigned int row = 0;
 
     for (string line; getline(matFile, line);) {
         if (matrixOrderLine) {
-            int orderFromFile = stoi(line);
+            this->order = stoi(line);
 
-            if (orderFromFile != _order) {
-                throw runtime_error("Matrix order error");
-            }
+            mat.resize(this->order);
 
             matrixOrderLine = false;
         } else {
-            mat[row].resize(_order);
+            mat[row].resize(this->order);
             unsigned int col = 0;
 
             for (string::iterator it = line.begin(), itEnd = line.end(); it < itEnd; it++) {
@@ -63,8 +50,6 @@ SquareMatrix<T>::SquareMatrix(unsigned int _order, string matFilePath) {
     }
 
     matFile.close();
-
-    order = _order;
 }
 
 template <typename T>
