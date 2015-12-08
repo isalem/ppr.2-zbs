@@ -7,6 +7,7 @@
 #include "matrix.hpp"
 #include <tclap/CmdLine.h>
 
+#include "mpi.h"
 
 using namespace std;
 
@@ -22,19 +23,18 @@ bool next_combination(std::vector<T> & combination, int n, int a) {
     return false;
 }
 
-void vector_println(std::vector<unsigned int> & vector) {
+void vector_println(std::vector<int> & vector) {
     copy(vector.begin(), vector.end(), std::ostream_iterator<int>(cout," "));
     cout << endl;
 }
 
-unsigned int sequentialZBS(vector<unsigned int> & combination, vector<unsigned int> & combinationDifference,
-                                 const vector<unsigned int> & allSet,
-                                 const SquareMatrix<unsigned int> & graph) {
+int sequential_zbs(vector<int>& combination, vector<int>& combination_difference, const vector<int>& allSet,
+        const SquareMatrix<int>& graph) {
 
-    unsigned int countEdges = 0;
+    int countEdges = 0;
 
-    for (vector<unsigned int>::iterator row = combination.begin(), rowEnd = combination.end(); row < rowEnd; row++) {
-        for (vector<unsigned int>::iterator col = combinationDifference.begin(), colEnd = combinationDifference.end();
+    for (vector<int>::iterator row = combination.begin(), rowEnd = combination.end(); row < rowEnd; row++) {
+        for (vector<int>::iterator col = combination_difference.begin(), colEnd = combination_difference.end();
              col < colEnd; col++) {
             if (graph(*row -1, *col - 1) == 1 ) {
                 countEdges++;
@@ -46,63 +46,64 @@ unsigned int sequentialZBS(vector<unsigned int> & combination, vector<unsigned i
 }
 
 int main(int argc, const char * argv[]) {
-    
+
+    MPI::Init((int&) argc, (char**&) argv);
+
     try {
         TCLAP::CmdLine cmd("Solution of the ZBS problem for the course MI-PPR.2.", ' ', "0.1");
 
-        
-        TCLAP::ValueArg<unsigned int> aArg("a", "a", "Přirozené číslo", true, 0, "number", cmd);
-        TCLAP::ValueArg<string> graphArg("g", "graph", "Jednoduchý souvislý neorientovaný neohodnocený graf",
+        TCLAP::ValueArg<int> a_arg("a", "a", "Přirozené číslo", true, 0, "number", cmd);
+        TCLAP::ValueArg<string> graph_arg("g", "graph", "Jednoduchý souvislý neorientovaný neohodnocený graf",
                                          false, "graph.txt", "filename", cmd);
-        
+
         cmd.parse( argc, argv );
 
-        string graphPath = graphArg.getValue();
-        SquareMatrix<unsigned int> graph(graphPath);
+        string graph_path = graph_arg.getValue();
+        SquareMatrix<int> graph(graph_path);
 
-        unsigned int a = aArg.getValue();
+        int a = a_arg.getValue();
 
         if (a >= graph.get_order()) {
             throw runtime_error("A is bigger then graph's order");
         }
 
-        vector<unsigned int> combination;
-        vector<unsigned int> allSet;
+        vector<int> combination;
+        vector<int> all_set;
 
-        for (unsigned int i = 1; i <= graph.get_order(); i++) {
-            allSet.insert(allSet.end(), i);
+        for (int i = 1; i <= graph.get_order(); i++) {
+            all_set.insert(all_set.end(), i);
         }
 
         // first combination (1, 2, 3, ...)
-        for (unsigned int i = 1; i <= a; i++) {
+        for (int i = 1; i <= a; i++) {
             combination.insert(combination.end(), i);
         }
 
-        unsigned int bestCountEdges = numeric_limits<unsigned int>::max();
-        vector<unsigned int> bestCombination;
-        vector<unsigned int> bestCombinationComplement;
+        int best_count_edges = numeric_limits<int>::max();
+        vector<int> best_combination;
+        vector<int> best_combination_complement;
 
         auto start_clock = chrono::high_resolution_clock::now();
 
         do {
-            vector<unsigned int> combinationComplement(graph.get_order());
-            vector<unsigned int>::iterator it;
+            vector<int> combination_complement((unsigned long) graph.get_order());
+            vector<int>::iterator it;
 
-            it = set_difference(allSet.begin(), allSet.end(),
+            it = set_difference(all_set.begin(), all_set.end(),
                                 combination.begin(), combination.end(),
-                                combinationComplement.begin());
+                                combination_complement.begin());
 
-            combinationComplement.resize(it - combinationComplement.begin());
+            combination_complement.resize((unsigned long) (it - combination_complement.begin()));
 
-            unsigned int countEdges = sequentialZBS(combination, combinationComplement, allSet, graph);
+            int count_edges = sequential_zbs(combination, combination_complement, all_set, graph);
 
-            if (countEdges < bestCountEdges) {
-                bestCountEdges = countEdges;
-                bestCombination = combination;
-                bestCombinationComplement = combinationComplement;
+            if (count_edges < best_count_edges) {
+                best_count_edges = count_edges;
+                best_combination = combination;
+                best_combination_complement = combination_complement;
             }
 
-        } while (next_combination<unsigned int>(combination, graph.get_order(), a));
+        } while (next_combination<int>(combination, graph.get_order(), a));
 
         auto end_clock = chrono::high_resolution_clock::now();
 
@@ -110,16 +111,19 @@ int main(int argc, const char * argv[]) {
 
         cout << "Time: " << seconds << " seconds" << endl;
         cout << "Set A: ";
-        vector_println(bestCombination);
+        vector_println(best_combination);
         cout << "Set N-A: ";
-        vector_println(bestCombinationComplement);
+        vector_println(best_combination_complement);
 
-        cout << "Count edges: " << bestCountEdges << endl;
+        cout << "Count edges: " << best_count_edges << endl;
+
+        MPI::Finalize();
 
         return 0;
         
 
     } catch (TCLAP::ArgException &e) {
+        MPI::Finalize();
         cerr << "error: " << e.error() << " for arg " << e.argId() << endl;
         return 1;
     }

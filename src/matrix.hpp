@@ -16,17 +16,17 @@ template <typename T>
 class SquareMatrix {
 private:
     std::vector<std::vector<T>> mat;
-    unsigned int order;
+    int order;
     
 public:
-    SquareMatrix(std::string matFilePath);
+    SquareMatrix(std::string mat_file_path);
     SquareMatrix(const SquareMatrix<T> & rhs);
     virtual ~SquareMatrix();
     
-    T& operator()(const unsigned int & row, const unsigned int & col);
-    const T& operator()(const unsigned int & row, const unsigned int & col) const;
+    T& operator()(const int & row, const int & col);
+    const T& operator()(const int & row, const int & col) const;
     
-    unsigned int get_order() const;
+    int get_order() const;
 };
 
 #include "matrix.cpp"

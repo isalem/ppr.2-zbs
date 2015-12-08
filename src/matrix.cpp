@@ -18,29 +18,29 @@
 using namespace std;
 
 template <typename T>
-SquareMatrix<T>::SquareMatrix(string matFilePath) {
-    ifstream matFile(matFilePath);
+SquareMatrix<T>::SquareMatrix(string mat_file_path) {
+    ifstream mat_file(mat_file_path);
 
-    if (!matFile) {
-        throw runtime_error("Can't open file " + matFilePath);
+    if (!mat_file) {
+        throw runtime_error("Can't open file " +mat_file_path);
     }
 
     bool matrixOrderLine = true;
-    unsigned int row = 0;
+    int row = 0;
 
-    for (string line; getline(matFile, line);) {
+    for (string line; getline(mat_file, line);) {
         if (matrixOrderLine) {
             this->order = stoi(line);
 
-            mat.resize(this->order);
+            mat.resize((unsigned long) this->order);
 
             matrixOrderLine = false;
         } else {
-            mat[row].resize(this->order);
-            unsigned int col = 0;
+            mat[row].resize((unsigned long) this->order);
+            int col = 0;
 
             for (string::iterator it = line.begin(), itEnd = line.end(); it < itEnd; it++) {
-                unsigned int number = *it - '0';
+                int number = *it - '0';
                 mat[row][col] = number;
                 col++;
             }
@@ -49,7 +49,7 @@ SquareMatrix<T>::SquareMatrix(string matFilePath) {
         }
     }
 
-    matFile.close();
+    mat_file.close();
 }
 
 template <typename T>
@@ -62,17 +62,17 @@ template <typename T>
 SquareMatrix<T>::~SquareMatrix<T>() { }
 
 template<typename T>
-T& SquareMatrix<T>::operator()(const unsigned int & row, const unsigned int & col) {
+T& SquareMatrix<T>::operator()(const int & row, const int & col) {
     return this->mat[row][col];
 }
 
 template<typename T>
-const T& SquareMatrix<T>::operator()(const unsigned int & row, const unsigned int & col) const {
+const T& SquareMatrix<T>::operator()(const int & row, const int & col) const {
     return this->mat[row][col];
 }
 
 template <typename T>
-unsigned int SquareMatrix<T>::get_order() const {
+int SquareMatrix<T>::get_order() const {
     return this->order;
 }
 
