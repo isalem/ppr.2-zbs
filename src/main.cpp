@@ -49,82 +49,84 @@ int main(int argc, const char * argv[]) {
 
     MPI::Init((int&) argc, (char**&) argv);
 
+    string graph_path;
+    int a;
+
+    // Parsing arguments
     try {
         TCLAP::CmdLine cmd("Solution of the ZBS problem for the course MI-PPR.2.", ' ', "0.1");
 
         TCLAP::ValueArg<int> a_arg("a", "a", "Přirozené číslo", true, 0, "number", cmd);
         TCLAP::ValueArg<string> graph_arg("g", "graph", "Jednoduchý souvislý neorientovaný neohodnocený graf",
-                                         false, "graph.txt", "filename", cmd);
+                false, "graph.txt", "filename", cmd);
 
-        cmd.parse( argc, argv );
+        cmd.parse(argc, argv);
 
-        string graph_path = graph_arg.getValue();
-        SquareMatrix<int> graph(graph_path);
-
-        int a = a_arg.getValue();
-
-        if (a >= graph.get_order()) {
-            throw runtime_error("A is bigger then graph's order");
-        }
-
-        vector<int> combination;
-        vector<int> all_set;
-
-        for (int i = 1; i <= graph.get_order(); i++) {
-            all_set.insert(all_set.end(), i);
-        }
-
-        // first combination (1, 2, 3, ...)
-        for (int i = 1; i <= a; i++) {
-            combination.insert(combination.end(), i);
-        }
-
-        int best_count_edges = numeric_limits<int>::max();
-        vector<int> best_combination;
-        vector<int> best_combination_complement;
-
-        auto start_clock = chrono::high_resolution_clock::now();
-
-        do {
-            vector<int> combination_complement((unsigned long) graph.get_order());
-            vector<int>::iterator it;
-
-            it = set_difference(all_set.begin(), all_set.end(),
-                                combination.begin(), combination.end(),
-                                combination_complement.begin());
-
-            combination_complement.resize((unsigned long) (it - combination_complement.begin()));
-
-            int count_edges = sequential_zbs(combination, combination_complement, all_set, graph);
-
-            if (count_edges < best_count_edges) {
-                best_count_edges = count_edges;
-                best_combination = combination;
-                best_combination_complement = combination_complement;
-            }
-
-        } while (next_combination<int>(combination, graph.get_order(), a));
-
-        auto end_clock = chrono::high_resolution_clock::now();
-
-        double seconds = chrono::duration_cast<chrono::milliseconds>((end_clock - start_clock)).count() / 1000.0;
-
-        cout << "Time: " << seconds << " seconds" << endl;
-        cout << "Set A: ";
-        vector_println(best_combination);
-        cout << "Set N-A: ";
-        vector_println(best_combination_complement);
-
-        cout << "Count edges: " << best_count_edges << endl;
-
-        MPI::Finalize();
-
-        return 0;
-        
+        graph_path = graph_arg.getValue();
+        a = a_arg.getValue();
 
     } catch (TCLAP::ArgException &e) {
         MPI::Finalize();
         cerr << "error: " << e.error() << " for arg " << e.argId() << endl;
         return 1;
+    } // End parsing
+
+    SquareMatrix<int> graph(graph_path);
+
+    if (a >= graph.get_order()) {
+        throw runtime_error("A is bigger then graph's order");
     }
+
+    vector<int> combination;
+    vector<int> all_set;
+
+    for (int i = 1; i <= graph.get_order(); i++) {
+        all_set.insert(all_set.end(), i);
+    }
+
+    // first combination (1, 2, 3, ...)
+    for (int i = 1; i <= a; i++) {
+        combination.insert(combination.end(), i);
+    }
+
+    int best_count_edges = numeric_limits<int>::max();
+    vector<int> best_combination;
+    vector<int> best_combination_complement;
+
+    auto start_clock = chrono::high_resolution_clock::now();
+
+    do {
+        vector<int> combination_complement((unsigned long) graph.get_order());
+        vector<int>::iterator it;
+
+        it = set_difference(all_set.begin(), all_set.end(), combination.begin(), combination.end(),
+                combination_complement.begin());
+
+        combination_complement.resize((unsigned long) (it - combination_complement.begin()));
+
+        int count_edges = sequential_zbs(combination, combination_complement, all_set, graph);
+
+        if (count_edges < best_count_edges) {
+            best_count_edges = count_edges;
+            best_combination = combination;
+            best_combination_complement = combination_complement;
+        }
+
+    } while (next_combination<int>(combination, graph.get_order(), a));
+
+    auto end_clock = chrono::high_resolution_clock::now();
+
+    double seconds = chrono::duration_cast<chrono::milliseconds>((end_clock - start_clock)).count() / 1000.0;
+
+    cout << "Time: " << seconds << " seconds" << endl;
+    cout << "Set A: ";
+    vector_println(best_combination);
+    cout << "Set N-A: ";
+    vector_println(best_combination_complement);
+
+    cout << "Count edges: " << best_count_edges << endl;
+
+    MPI::Finalize();
+
+    return 0;
 }
