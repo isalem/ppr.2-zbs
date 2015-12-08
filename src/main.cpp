@@ -7,6 +7,7 @@
 #include "matrix.hpp"
 #include <tclap/CmdLine.h>
 
+#include <gmpxx.h>
 #include "mpi.h"
 
 using namespace std;
