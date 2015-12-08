@@ -78,10 +78,10 @@ int main(int argc, const char * argv[]) {
     }
 
     vector<int> combination;
-    vector<int> all_set;
+    vector<int> all_edges;
 
     for (int i = 1; i <= graph.get_order(); i++) {
-        all_set.insert(all_set.end(), i);
+        all_edges.insert(all_edges.end(), i);
     }
 
     // first combination (1, 2, 3, ...)
@@ -99,12 +99,12 @@ int main(int argc, const char * argv[]) {
         vector<int> combination_complement((unsigned long) graph.get_order());
         vector<int>::iterator it;
 
-        it = set_difference(all_set.begin(), all_set.end(), combination.begin(), combination.end(),
+        it = set_difference(all_edges.begin(), all_edges.end(), combination.begin(), combination.end(),
                 combination_complement.begin());
 
         combination_complement.resize((unsigned long) (it - combination_complement.begin()));
 
-        int count_edges = sequential_zbs(combination, combination_complement, all_set, graph);
+        int count_edges = sequential_zbs(combination, combination_complement, all_edges, graph);
 
         if (count_edges < best_count_edges) {
             best_count_edges = count_edges;
