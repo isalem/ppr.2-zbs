@@ -3,6 +3,7 @@
 #include <chrono>
 #include <limits>
 #include <iterator>
+#include <time.h>
 
 #include "matrix.hpp"
 #include <tclap/CmdLine.h>
@@ -12,8 +13,7 @@
 
 using namespace std;
 
-template <typename T>
-bool next_combination(std::vector<T> & combination, int n, int a) {
+bool next_combination(std::vector<int> & combination, int n, int a) {
     for (int i = a - 1; i >= 0; --i)
         if (combination[i] < n - a + i + 1) {
             ++combination[i];
@@ -24,18 +24,56 @@ bool next_combination(std::vector<T> & combination, int n, int a) {
     return false;
 }
 
+void decompose_domain(mpz_class domain_size, int world_rank, int world_size,
+        mpz_class * subdomain_start, mpz_class * subdomain_size) {
+    *subdomain_start = domain_size / world_size * world_rank;
+    *subdomain_size = domain_size / world_size;
+    if (world_rank == world_size - 1) {
+        // Give remainder to last process
+        *subdomain_size += domain_size % world_size;
+    }
+}
+
+mpz_class combinations_count(int n, int k) {
+    mpz_class res = 1;
+    for (int i = n - k + 1; i <= n; ++i) {
+        res *= i;
+    }
+    for (int i = 2; i <= k; ++i) {
+        res /= i;
+    }
+    return res;
+}
+
+void number_to_combination(int n, int a, mpz_class number, vector<int> & combination) {
+    int next = 1;
+
+    while (a > 0) {
+        mpz_class temp_number = combinations_count(n - 1, a - 1);
+
+        if (number < temp_number) {
+            combination.push_back(next);
+            a--;
+        } else {
+            number -= temp_number;
+        }
+
+        n--;
+        next++;
+    }
+}
+
 void vector_println(std::vector<int> & vector) {
     copy(vector.begin(), vector.end(), std::ostream_iterator<int>(cout," "));
     cout << endl;
 }
 
-int sequential_zbs(vector<int>& combination, vector<int>& combination_difference, const vector<int>& allSet,
-        const SquareMatrix<int>& graph) {
+int find_min_graph_cut(vector<int>& combination, vector<int>& combination_complement, const SquareMatrix<int>& graph) {
 
     int countEdges = 0;
 
     for (vector<int>::iterator row = combination.begin(), rowEnd = combination.end(); row < rowEnd; row++) {
-        for (vector<int>::iterator col = combination_difference.begin(), colEnd = combination_difference.end();
+        for (vector<int>::iterator col = combination_complement.begin(), colEnd = combination_complement.end();
              col < colEnd; col++) {
             if (graph(*row -1, *col - 1) == 1 ) {
                 countEdges++;
@@ -44,6 +82,18 @@ int sequential_zbs(vector<int>& combination, vector<int>& combination_difference
     }
 
     return countEdges;
+}
+
+const string currentDateTime() {
+    time_t     now = time(0);
+    struct tm  tstruct;
+    char       buf[80];
+    tstruct = *localtime(&now);
+    // Visit http://en.cppreference.com/w/cpp/chrono/c/strftime
+    // for more information about date/time format
+    strftime(buf, sizeof(buf), "%Y-%m-%d.%X", &tstruct);
+
+    return buf;
 }
 
 int main(int argc, const char * argv[]) {
@@ -78,54 +128,75 @@ int main(int argc, const char * argv[]) {
         throw runtime_error("A is bigger then graph's order");
     }
 
-    vector<int> combination;
-    vector<int> all_edges;
+    int process_rank;
+    int world_size;
 
+    MPI_Comm_rank(MPI_COMM_WORLD, &process_rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+
+  //  auto start_clock = chrono::high_resolution_clock::now();
+
+    mpz_class comb_count = combinations_count(graph.get_order(), a);
+    mpz_class subdomain_start;
+    mpz_class subdomain_size;
+
+    decompose_domain(comb_count, process_rank, world_size, &subdomain_start, &subdomain_size);
+
+    vector<int> all_edges;
     for (int i = 1; i <= graph.get_order(); i++) {
         all_edges.insert(all_edges.end(), i);
     }
 
-    // first combination (1, 2, 3, ...)
-    for (int i = 1; i <= a; i++) {
-        combination.insert(combination.end(), i);
-    }
+    vector<int> start_combination;
+    number_to_combination(graph.get_order(), a, subdomain_start, start_combination);
+    vector<int> stop_combination;
+    number_to_combination(graph.get_order(), a, subdomain_start + subdomain_size - 1, stop_combination);
 
     int best_count_edges = numeric_limits<int>::max();
     vector<int> best_combination;
     vector<int> best_combination_complement;
 
-    auto start_clock = chrono::high_resolution_clock::now();
-
     do {
-        vector<int> combination_complement((unsigned long) graph.get_order());
-        vector<int>::iterator it;
-
-        it = set_difference(all_edges.begin(), all_edges.end(), combination.begin(), combination.end(),
+        vector<int> combination_complement(all_edges.size() - start_combination.size());
+        set_difference(all_edges.begin(), all_edges.end(), start_combination.begin(), start_combination.end(),
                 combination_complement.begin());
 
-        combination_complement.resize((unsigned long) (it - combination_complement.begin()));
-
-        int count_edges = sequential_zbs(combination, combination_complement, all_edges, graph);
+        int count_edges = find_min_graph_cut(start_combination, combination_complement, graph);
 
         if (count_edges < best_count_edges) {
             best_count_edges = count_edges;
-            best_combination = combination;
+            best_combination = start_combination;
             best_combination_complement = combination_complement;
         }
 
-    } while (next_combination<int>(combination, graph.get_order(), a));
+        if (start_combination == stop_combination) {
+            break;
+        }
 
-    auto end_clock = chrono::high_resolution_clock::now();
+    } while (next_combination(start_combination, graph.get_order(), a));
 
-    double seconds = chrono::duration_cast<chrono::milliseconds>((end_clock - start_clock)).count() / 1000.0;
+    cout << "[" << currentDateTime() << "] " << "Waiting: " << process_rank << endl;
 
-    cout << "Time: " << seconds << " seconds" << endl;
-    cout << "Set A: ";
-    vector_println(best_combination);
-    cout << "Set N-A: ";
-    vector_println(best_combination_complement);
+    MPI_Barrier(MPI_COMM_WORLD);
 
-    cout << "Count edges: " << best_count_edges << endl;
+    int global_best_count_edges;
+    MPI_Allreduce(&best_count_edges, &global_best_count_edges, 1, MPI_INT, MPI_MIN, MPI_COMM_WORLD);
+
+  //  auto end_clock = chrono::high_resolution_clock::now();
+
+   // double seconds = chrono::duration_cast<chrono::milliseconds>((end_clock - start_clock)).count() / 1000.0;
+
+    if (best_count_edges == global_best_count_edges) {
+        cout << "Count edges: " << global_best_count_edges << endl;
+    }
+
+//    cout << "Time: " << seconds << " seconds" << endl;
+//    cout << "Set A: ";
+//    vector_println(best_combination);
+//    cout << "Set N-A: ";
+//    vector_println(best_combination_complement);
+//
+//    cout << "Count edges: " << best_count_edges << endl;
 
     MPI::Finalize();
 
