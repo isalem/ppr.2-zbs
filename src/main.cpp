@@ -1,6 +1,5 @@
 #include <iostream>
 #include <vector>
-#include <chrono>
 #include <limits>
 #include <iterator>
 #include <time.h>
@@ -89,8 +88,6 @@ const string currentDateTime() {
     struct tm  tstruct;
     char       buf[80];
     tstruct = *localtime(&now);
-    // Visit http://en.cppreference.com/w/cpp/chrono/c/strftime
-    // for more information about date/time format
     strftime(buf, sizeof(buf), "%Y-%m-%d.%X", &tstruct);
 
     return buf;
@@ -99,6 +96,8 @@ const string currentDateTime() {
 int main(int argc, const char * argv[]) {
 
     MPI::Init((int&) argc, (char**&) argv);
+
+    cout << "[" << currentDateTime() << "] Initiated" << endl;
 
     string graph_path;
     int a;
@@ -134,7 +133,10 @@ int main(int argc, const char * argv[]) {
     MPI_Comm_rank(MPI_COMM_WORLD, &process_rank);
     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 
-  //  auto start_clock = chrono::high_resolution_clock::now();
+    if (process_rank == 0) {
+        cout << "[" << currentDateTime() << "] A = " << a << endl;
+        cout << "[" << currentDateTime() << "] N = " << graph.get_order() << endl;
+    }
 
     mpz_class comb_count = combinations_count(graph.get_order(), a);
     mpz_class subdomain_start;
@@ -155,9 +157,10 @@ int main(int argc, const char * argv[]) {
     int best_count_edges = numeric_limits<int>::max();
     vector<int> best_combination;
     vector<int> best_combination_complement;
+    const unsigned long combination_length = all_edges.size() - start_combination.size();
 
     do {
-        vector<int> combination_complement(all_edges.size() - start_combination.size());
+        vector<int> combination_complement(combination_length);
         set_difference(all_edges.begin(), all_edges.end(), start_combination.begin(), start_combination.end(),
                 combination_complement.begin());
 
@@ -175,19 +178,15 @@ int main(int argc, const char * argv[]) {
 
     } while (next_combination(start_combination, graph.get_order(), a));
 
-    cout << "[" << currentDateTime() << "] " << "Waiting: " << process_rank << endl;
+    cout << "[" << currentDateTime() << "] Process " << process_rank  << " finished" << endl;
 
     MPI_Barrier(MPI_COMM_WORLD);
 
     int global_best_count_edges;
-    MPI_Allreduce(&best_count_edges, &global_best_count_edges, 1, MPI_INT, MPI_MIN, MPI_COMM_WORLD);
+    MPI_Reduce(&best_count_edges, &global_best_count_edges, 1, MPI_INT, MPI_MIN, 0, MPI_COMM_WORLD);
 
-  //  auto end_clock = chrono::high_resolution_clock::now();
-
-   // double seconds = chrono::duration_cast<chrono::milliseconds>((end_clock - start_clock)).count() / 1000.0;
-
-    if (best_count_edges == global_best_count_edges) {
-        cout << "Count edges: " << global_best_count_edges << endl;
+    if (process_rank == 0) {
+        cout << "[" << currentDateTime() << "] Count edges: " << global_best_count_edges << endl;
     }
 
 //    cout << "Time: " << seconds << " seconds" << endl;
