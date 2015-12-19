@@ -3,6 +3,7 @@
 #include <limits>
 #include <iterator>
 #include <time.h>
+#include <chrono>
 
 #include "matrix.hpp"
 #include <tclap/CmdLine.h>
@@ -97,8 +98,6 @@ int main(int argc, const char * argv[]) {
 
     MPI::Init((int&) argc, (char**&) argv);
 
-    cout << "[" << currentDateTime() << "] Initiated" << endl;
-
     string graph_path;
     int a;
 
@@ -121,6 +120,8 @@ int main(int argc, const char * argv[]) {
         return 1;
     } // End parsing
 
+    auto start_clock = chrono::high_resolution_clock::now();
+
     SquareMatrix<int> graph(graph_path);
 
     if (a >= graph.get_order()) {
@@ -134,6 +135,7 @@ int main(int argc, const char * argv[]) {
     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 
     if (process_rank == 0) {
+        cout << "[" << currentDateTime() << "] Initiated" << endl;
         cout << "[" << currentDateTime() << "] A = " << a << endl;
         cout << "[" << currentDateTime() << "] N = " << graph.get_order() << endl;
     }
@@ -185,8 +187,19 @@ int main(int argc, const char * argv[]) {
     int global_best_count_edges;
     MPI_Reduce(&best_count_edges, &global_best_count_edges, 1, MPI_INT, MPI_MIN, 0, MPI_COMM_WORLD);
 
+    auto end_clock = chrono::high_resolution_clock::now();
+
     if (process_rank == 0) {
         cout << "[" << currentDateTime() << "] Count edges: " << global_best_count_edges << endl;
+    }
+
+    double seconds = chrono::duration_cast<chrono::milliseconds>((end_clock - start_clock)).count() / 1000.0;
+
+    double global_seconds;
+    MPI_Reduce(&seconds, &global_seconds, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
+
+    if (process_rank == 0) {
+        cout << "[" << currentDateTime() << "] Time: " << global_seconds << endl;
     }
 
 //    cout << "Time: " << seconds << " seconds" << endl;
