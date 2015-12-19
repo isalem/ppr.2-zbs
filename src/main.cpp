@@ -57,6 +57,8 @@ int main(int argc, const char * argv[]) {
         
         cmd.parse( argc, argv );
 
+        auto start_clock = chrono::high_resolution_clock::now();
+
         string graphPath = graphArg.getValue();
         SquareMatrix<unsigned int> graph(graphPath);
 
@@ -82,8 +84,6 @@ int main(int argc, const char * argv[]) {
         vector<unsigned int> bestCombination;
         vector<unsigned int> bestCombinationComplement;
 
-        auto start_clock = chrono::high_resolution_clock::now();
-
         do {
             vector<unsigned int> combinationComplement(graph.get_order());
             vector<unsigned int>::iterator it;
@@ -92,7 +92,7 @@ int main(int argc, const char * argv[]) {
                                 combination.begin(), combination.end(),
                                 combinationComplement.begin());
 
-            combinationComplement.resize(it - combinationComplement.begin());
+            combinationComplement.resize((unsigned long) (it - combinationComplement.begin()));
 
             unsigned int countEdges = sequentialZBS(combination, combinationComplement, allSet, graph);
 
