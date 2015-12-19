@@ -27,4 +27,4 @@
 # Do not change.
 #$ -pe ompi 1
 
-./build/zbs -a 13 -g ./data/graph.txt
+./build/zbs -a 8 -g ./data/graph60.txt
