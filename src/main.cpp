@@ -195,11 +195,17 @@ int main(int argc, const char * argv[]) {
 
     double seconds = chrono::duration_cast<chrono::milliseconds>((end_clock - start_clock)).count() / 1000.0;
 
-    double global_seconds;
-    MPI_Reduce(&seconds, &global_seconds, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
+    double max_global_seconds;
+    double min_global_seconds;
+    double avr_global_seconds;
+    MPI_Reduce(&seconds, &max_global_seconds, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
+    MPI_Reduce(&seconds, &min_global_seconds, 1, MPI_DOUBLE, MPI_MIN, 0, MPI_COMM_WORLD);
+    MPI_Reduce(&seconds, &avr_global_seconds, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 
     if (process_rank == 0) {
-        cout << "[" << currentDateTime() << "] Time: " << global_seconds << endl;
+        cout << "[" << currentDateTime() << "] Max time: " << max_global_seconds << endl;
+        cout << "[" << currentDateTime() << "] Min time: " << min_global_seconds << endl;
+        cout << "[" << currentDateTime() << "] Avr time: " << avr_global_seconds / world_size << endl;
     }
 
 //    cout << "Time: " << seconds << " seconds" << endl;
