@@ -4,6 +4,7 @@
 #include <iterator>
 #include <time.h>
 #include <chrono>
+#include <math.h>
 
 #include "matrix.hpp"
 #include <tclap/CmdLine.h>
@@ -94,6 +95,20 @@ const string currentDateTime() {
     return buf;
 }
 
+double standard_deviation(double data[], double n)
+{
+    double mean=0.0, sum_deviation=0.0;
+    int i;
+    for(i = 0; i < n; ++i)
+    {
+        mean += data[i];
+    }
+    mean = mean / n;
+    for(i = 0; i < n; ++i)
+        sum_deviation += (data[i] - mean) * (data[i] - mean);
+    return sqrt(sum_deviation / n);
+}
+
 int main(int argc, const char * argv[]) {
 
     MPI::Init((int&) argc, (char**&) argv);
@@ -120,8 +135,6 @@ int main(int argc, const char * argv[]) {
         return 1;
     } // End parsing
 
-    auto start_clock = chrono::high_resolution_clock::now();
-
     SquareMatrix<int> graph(graph_path);
 
     if (a >= graph.get_order()) {
@@ -139,6 +152,8 @@ int main(int argc, const char * argv[]) {
         cout << "[" << currentDateTime() << "] A = " << a << endl;
         cout << "[" << currentDateTime() << "] N = " << graph.get_order() << endl;
     }
+
+    auto start_clock = chrono::high_resolution_clock::now();
 
     mpz_class comb_count = combinations_count(graph.get_order(), a);
     mpz_class subdomain_start;
@@ -192,28 +207,25 @@ int main(int argc, const char * argv[]) {
         cout << "[" << currentDateTime() << "] Count edges: " << global_best_count_edges << endl;
     }
 
-    double seconds = chrono::duration_cast<chrono::milliseconds>((end_clock - start_clock)).count() / 1000.0;
+    double time = chrono::duration_cast<chrono::milliseconds>((end_clock - start_clock)).count() / 1000.0;
 
-    double max_global_seconds;
-    double min_global_seconds;
-    double avr_global_seconds;
-    MPI_Reduce(&seconds, &max_global_seconds, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
-    MPI_Reduce(&seconds, &min_global_seconds, 1, MPI_DOUBLE, MPI_MIN, 0, MPI_COMM_WORLD);
-    MPI_Reduce(&seconds, &avr_global_seconds, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+    double global_time;
+    MPI_Reduce(&time, &global_time, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
+
+    double * local_times = NULL;
+    if (process_rank == 0) {
+        local_times = (double*) malloc(sizeof(double) * world_size);
+    }
+    MPI_Gather(&time, 1, MPI_DOUBLE, local_times, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
     if (process_rank == 0) {
-        cout << "[" << currentDateTime() << "] Max time: " << max_global_seconds << endl;
-        cout << "[" << currentDateTime() << "] Min time: " << min_global_seconds << endl;
-        cout << "[" << currentDateTime() << "] Avr time: " << avr_global_seconds / world_size << endl;
-    }
+        double std_der = standard_deviation(local_times, world_size);
 
-//    cout << "Time: " << seconds << " seconds" << endl;
-//    cout << "Set A: ";
-//    vector_println(best_combination);
-//    cout << "Set N-A: ";
-//    vector_println(best_combination_complement);
-//
-//    cout << "Count edges: " << best_count_edges << endl;
+        cout << "[" << currentDateTime() << "] Time: " << global_time << endl;
+        cout << "[" << currentDateTime() << "] Deviation: " << std_der << endl;
+
+        free(local_times);
+    }
 
     MPI::Finalize();
 
