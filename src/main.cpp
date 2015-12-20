@@ -180,14 +180,13 @@ int main(int argc, const char * argv[]) {
 
     } while (next_combination(start_combination, graph.get_order(), a));
 
+    auto end_clock = chrono::high_resolution_clock::now();
     cout << "[" << currentDateTime() << "] Process " << process_rank  << " finished" << endl;
 
     MPI_Barrier(MPI_COMM_WORLD);
 
     int global_best_count_edges;
     MPI_Reduce(&best_count_edges, &global_best_count_edges, 1, MPI_INT, MPI_MIN, 0, MPI_COMM_WORLD);
-
-    auto end_clock = chrono::high_resolution_clock::now();
 
     if (process_rank == 0) {
         cout << "[" << currentDateTime() << "] Count edges: " << global_best_count_edges << endl;
