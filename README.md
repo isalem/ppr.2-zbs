@@ -2,7 +2,7 @@
 * [Tclap](http://tclap.sourceforge.net)
 
 # MPI version
-There is in a [mpi](https://github.com/isalem/ppr.2-zbs/tree/mpi) branch.
+There is in the [mpi](https://github.com/isalem/ppr.2-zbs/tree/mpi) branch.
 
 # Build
     $ mkdir build
