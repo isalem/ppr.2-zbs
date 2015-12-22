@@ -1,0 +1,22 @@
+[2015-12-21.20:01:25] Initiated
+[2015-12-21.20:01:25] A = 12
+[2015-12-21.20:01:25] N = 35
+[2015-12-21.20:02:01] Process 3 finished
+[2015-12-21.20:02:01] Process 12 finished
+[2015-12-21.20:02:01] Process 14 finished
+[2015-12-21.20:02:01] Process 13 finished
+[2015-12-21.20:02:01] Process 15 finished
+[2015-12-21.20:02:01] Process 1 finished
+[2015-12-21.20:02:01] Process 4 finished
+[2015-12-21.20:02:01] Process 7 finished
+[2015-12-21.20:02:01] Process 6 finished
+[2015-12-21.20:02:02] Process 2 finished
+[2015-12-21.20:02:02] Process 8 finished
+[2015-12-21.20:02:02] Process 5 finished
+[2015-12-21.20:02:02] Process 9 finished
+[2015-12-21.20:02:02] Process 11 finished
+[2015-12-21.20:02:02] Process 0 finished
+[2015-12-21.20:02:03] Process 10 finished
+[2015-12-21.20:02:03] Count edges: 43
+[2015-12-21.20:02:03] Time: 37.966
+[2015-12-21.20:02:03] Deviation: 0.456886

@@ -1,0 +1,14 @@
+[2015-12-20.22:39:40] Initiated
+[2015-12-20.22:39:40] A = 13
+[2015-12-20.22:39:40] N = 35
+[2015-12-20.22:41:53] Process 0 finished
+[2015-12-20.22:41:53] Process 6 finished
+[2015-12-20.22:41:54] Process 7 finished
+[2015-12-20.22:41:54] Process 3 finished
+[2015-12-20.22:41:55] Process 5 finished
+[2015-12-20.22:41:55] Process 1 finished
+[2015-12-20.22:41:55] Process 2 finished
+[2015-12-20.22:41:56] Process 4 finished
+[2015-12-20.22:41:56] Count edges: 45
+[2015-12-20.22:41:56] Time: 136.131
+[2015-12-20.22:41:56] Deviation: 0.879399
